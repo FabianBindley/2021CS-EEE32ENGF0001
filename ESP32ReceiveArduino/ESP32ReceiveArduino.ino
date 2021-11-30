@@ -75,9 +75,11 @@ void loop() {
   instr = encode_instr(arg);
   if (instr == -1) {
     Serial.println("Invalid input.");
-  } else if (instr == 0) {
-    read_arduino();
   } else {
-    write_wire(input);
+    write_arduino(input);
+  }
+
+  if (instr == 0) {
+    read_arduino();
   }
 }
