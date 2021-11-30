@@ -1,7 +1,7 @@
 
 # ESP32 to Arduino Communication Protocol
 
-Handling of protocol (9600 8N1) is done internally by UART of ESP32. This protocol defines how instructions are sent to/from the ESP32 and Arduino board.
+This protocol defines how instructions are sent to/from the ESP32 and Arduino board, using the Wire library and the I2C protocol.
 
 **__Sensors__**
 
@@ -27,7 +27,7 @@ If an invalid instruction is entered, an error is raised and no data is transmit
 
 **__Encoding__**
 
-All data is sent with ASCII encoding, using a newline delimiter to signal the end of one transmission of data. To avoid unnecessary data transmission, and to reduce the overhead of parsing raw signal instructions, the transmission handles conversion of instructions in the following manner:
+All data is sent with ASCII encoding as bytes. To avoid unnecessary data transmission, and to reduce the overhead of parsing raw signal instructions, the transmission handles conversion of instructions in the following manner:
 
 1. Convert each of the instructions into the corresponding number. Since each instruction has a pre-specified number of arguments, the number of arguments to be read from the input can be determined from just the instruction.
 2. Pass each argument (if any), separated with a space.  
@@ -36,7 +36,7 @@ All data is sent with ASCII encoding, using a newline delimiter to signal the en
 
 As according to the instruction set mapping above, the Arduino receives numbers corresponding to commands it should handle. On this side, the process should be as follows:
 
-1. Cast each argument to a signed integer.
+1. Receive each argument as bytes.
 2. Compare against the internal instruction set to call the appropriate code.
 3. Return any values through the same serial port.  
 
