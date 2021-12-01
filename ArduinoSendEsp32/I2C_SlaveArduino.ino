@@ -101,8 +101,8 @@ void receiveEvent() {
 
   // 2nd token is sensor number in int
   token = strtok(NULL, " ");
-  if (token != NULL){
-  int sensorNo = (token-'0') - 1;
+  if (token != NULL) {
+    int sensorNo = (token-'0') - 1;
   }
   
   // 3rd token is value in float
