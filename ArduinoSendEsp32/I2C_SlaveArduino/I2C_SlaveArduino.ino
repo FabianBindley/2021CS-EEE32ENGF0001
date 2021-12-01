@@ -79,15 +79,15 @@ void requestEvent() {
   Serial.println("Request event");
 
   float result = readSensor();
-  String result_str = String(result, 3); // Convert float to string with 3 DP precision
+  // String result_str = String(result, 3); // Convert float to string with 3 DP precision
 
-  Wire.write(result_str); 
+  Wire.write((byte)result); 
 }
 
-void receiveEvent() {
+void receiveEvent(int num_bytes) {
   Serial.println("Receive event");
 
-  char received_string[10];
+  char received_string[num_bytes];
   int counter = 0;
   char *token;
   float fvalue;
@@ -102,7 +102,7 @@ void receiveEvent() {
   // 2nd token is sensor number in int
   token = strtok(NULL, " ");
   if (token != NULL) {
-    int sensorNo = (token-'0') - 1;
+    int sensorNo = atoi(token);
   }
   
   // 3rd token is value in float
