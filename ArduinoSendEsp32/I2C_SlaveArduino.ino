@@ -10,11 +10,6 @@
 #define MOTOR 2
 #define PH 3
 
-
-float degreeC = 35.0;
-float RPM = 200.0;
-float PH = 7.0;
-float sensors[3] = {degreeC, RPM, PH};
 int sensorNo = 0;
 
 
@@ -90,6 +85,8 @@ void requestEvent() {
 }
 
 void receiveEvent() {
+  Serial.println("Receive event");
+
   char received_string[10];
   int counter = 0;
   char *token;
@@ -123,8 +120,6 @@ void receiveEvent() {
     // Raise infinite loop to stop running of code
     while (1);
   }
-  
-  Serial.println("Receive event");
 }
 
   
