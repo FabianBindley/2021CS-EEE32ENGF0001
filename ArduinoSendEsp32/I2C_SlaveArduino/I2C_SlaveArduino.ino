@@ -4,6 +4,7 @@
 // I2C slave Arduino
 #define SLAVE_ADDR 9
 #define DELAY_TIME 100
+#define PRECISION 4
 
 // Define sensors
 #define TEMP 1
@@ -13,17 +14,17 @@
 int sensorNo = 0;
 
 
-float getTemp();
-float getRPM();
-float getPH();
+double getTemp();
+double getRPM();
+double getPH();
 
 void setTemp();
 void setRPM();
 void setPH();
 
 
-float readSensor() {
-  float result = 0.0;
+double readSensor() {
+  double result = 0.0;
   switch (sensorNo) {
     case TEMP:
       result = getTemp();
@@ -78,10 +79,12 @@ void loop() {
 void requestEvent() {
   Serial.println("Request event");
 
-  float result = readSensor();
-  // String result_str = String(result, 3); // Convert float to string with 3 DP precision
+  double result = readSensor();
 
-  Wire.write((byte)result); 
+  char result_str[10];
+  dtostrf(result, 4, 4, result_str);  //4 is mininum width, 4 is precision; float value is copied onto buff
+
+  Wire.write(result_str); 
 }
 
 void receiveEvent(int num_bytes) {
