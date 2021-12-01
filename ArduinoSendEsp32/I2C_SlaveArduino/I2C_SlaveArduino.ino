@@ -11,6 +11,8 @@
 #define MOTOR 2
 #define PH 3
 
+#define SERIAL_DEBUG_BAUD 115200
+
 int sensorNo = 0;
 
 
@@ -68,7 +70,7 @@ void setup() {
   // Function to run when data received from master
   Wire.onReceive(receiveEvent);
   
-  Serial.begin(9600);
+  Serial.begin(SERIAL_DEBUG_BAUD);
   Serial.println("I2C Slave Arduino");
 }
 
