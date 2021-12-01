@@ -14,6 +14,7 @@ V1 = float(input("V1"))
 V2 = float(input("V2"))
 V3 = float(input("V3"))
 
+
 #calculate resistance of thermistor
 R1 = V1 * R0/(V0-V1)
 R2 = V2 * R0/(V0-V2)
