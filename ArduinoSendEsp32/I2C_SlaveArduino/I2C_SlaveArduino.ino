@@ -75,7 +75,9 @@ void setRPM(float value) {
 }
 
 
-float getRPM();
+float getRPM() {
+  return 0.0;
+}
 
 
 void setPH(float value) {
@@ -85,7 +87,9 @@ void setPH(float value) {
 }
 
 
-float getPH();
+float getPH() {
+  return 0.0;
+}
 
 
 void tempControl() {

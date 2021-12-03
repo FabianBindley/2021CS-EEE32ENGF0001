@@ -160,9 +160,9 @@ float read_arduino() {
 
   Wire.requestFrom(SLAVE_ADDR, 6);
   while (Wire.available()) {
-    received_string += Wire.read();
+    received_string += (char)Wire.read();
   }
-  Serial.println(received_string);
+  // Serial.println(received_string);
 
   float result = received_string.toFloat();
 
@@ -214,17 +214,17 @@ void loop() {
   write_arduino(read_temp);
   float temp = read_arduino();
   // float temp = 1.23;
-//  tb.sendTelemetryFloat("temperature", temp);
-//
-//  write_arduino(read_ph);
-//  float ph = read_arduino();
-//  // float ph = 2.34;
-//  tb.sendTelemetryFloat("pH", ph);
-//
-//  write_arduino(read_motor);
-//  float motor = read_arduino();
-//  // float motor = 3.45;
-//  tb.sendTelemetryFloat("Motor stirring rate", motor);
+  tb.sendTelemetryFloat("temperature", temp);
+
+  write_arduino(read_ph);
+  float ph = read_arduino();
+  // float ph = 2.34;
+  tb.sendTelemetryFloat("pH", ph);
+
+  write_arduino(read_motor);
+  float motor = read_arduino();
+  // float motor = 3.45;
+  tb.sendTelemetryFloat("Motor stirring rate", motor);
 
   tb.loop();
 }
