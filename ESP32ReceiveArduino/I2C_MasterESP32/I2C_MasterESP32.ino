@@ -11,8 +11,8 @@
 #define SERIAL_DEBUG_BAUD 115200
 
 // Define the pins used for SDA and SCL
-#define I2C_SDA 21
-#define I2C_SCL 22
+#define I2C_SCL 21
+#define I2C_SDA 22
 
 #define INPUT_SIZE 10
 #define SLAVE_ADDR 9  // Define Slave I2C Address
@@ -162,6 +162,7 @@ float read_arduino() {
   while (Wire.available()) {
     received_string += Wire.read();
   }
+  Serial.println(received_string);
 
   float result = received_string.toFloat();
 
@@ -213,17 +214,17 @@ void loop() {
   write_arduino(read_temp);
   float temp = read_arduino();
   // float temp = 1.23;
-  tb.sendTelemetryFloat("temperature", temp);
-
-  write_arduino(read_ph);
-  float ph = read_arduino();
-  // float ph = 2.34;
-  tb.sendTelemetryFloat("pH", ph);
-
-  write_arduino(read_motor);
-  float motor = read_arduino();
-  // float motor = 3.45;
-  tb.sendTelemetryFloat("Motor stirring rate", motor);
+//  tb.sendTelemetryFloat("temperature", temp);
+//
+//  write_arduino(read_ph);
+//  float ph = read_arduino();
+//  // float ph = 2.34;
+//  tb.sendTelemetryFloat("pH", ph);
+//
+//  write_arduino(read_motor);
+//  float motor = read_arduino();
+//  // float motor = 3.45;
+//  tb.sendTelemetryFloat("Motor stirring rate", motor);
 
   tb.loop();
 }
