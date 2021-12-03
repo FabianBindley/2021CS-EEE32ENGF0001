@@ -111,18 +111,12 @@ void tempControl() {
 
 float readSensor() {
   float result = 0.0;
-  switch (sensorNo) {
-    case TEMP:
-      result = getTemp();
-      break;
-    case MOTOR:
-      result = getRPM();
-      break;
-    case PH:
-      result = getPH();
-      break;
-    default:
-      break;
+  if (sensorNo == TEMP) {
+    result = getTemp();
+  } else if (sensorNo == MOTOR) {
+    result = getRPM();
+  } else if (sensorNo == PH) {
+    result = getPH();
   }
 
   return result;
@@ -130,18 +124,12 @@ float readSensor() {
 
 
 void writeSensor(float value) {
-  switch (sensorNo) {
-    case TEMP:
-      setTemp(value);
-      break;
-    case MOTOR:
-      setRPM(value);
-      break;
-    case PH:
-      setPH(value);
-      break;
-    default:
-      break;
+  if (sensorNo == TEMP) {
+    setTemp();
+  } else if (sensorNo == MOTOR) {
+    setRPM();
+  } else if (sensorNo == PH) {
+    setPH();
   }
 }
 
