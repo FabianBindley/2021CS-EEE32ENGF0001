@@ -125,11 +125,11 @@ float readSensor() {
 
 void writeSensor(float value) {
   if (sensorNo == TEMP) {
-    setTemp();
+    setTemp(value);
   } else if (sensorNo == MOTOR) {
-    setRPM();
+    setRPM(value);
   } else if (sensorNo == PH) {
-    setPH();
+    setPH(value);
   }
 }
 
@@ -188,7 +188,7 @@ void receiveEvent(int num_bytes) {
   // 2nd token is sensor number in int
   token = strtok(NULL, " ");
   if (token != NULL) {
-    int sensorNo = atoi(token);
+    sensorNo = atoi(token);
   }
   
   // 3rd token is value in float
