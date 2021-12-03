@@ -37,8 +37,6 @@ float thermistorResistance;
 float voltage;
 
 float setpointTemperature = 30.0;
-float temperatureLagOffset = 1.0;
-
 float setpointRPM = 1000;
 float setpointPH = 6.6;
 
@@ -98,8 +96,8 @@ void tempControl() {
   Serial.print("Celcius Temp: ");
   Serial.println(celciusTemp);
   
-  //If the temperature is less than the required temp - the lag offset, turn on the heating circuit
-  if (celciusTemp < (setpointTemperature - temperatureLagOffset)) {
+  //If the temperature is less than the required temp, turn on the heating circuit
+  if (celciusTemp < setpointTemperature) {
     //Turn on the heater at half strength using 50% PWM
     analogWrite(heaterOutputPin, 127); 
     digitalWrite(heaterLEDpin, HIGH);
