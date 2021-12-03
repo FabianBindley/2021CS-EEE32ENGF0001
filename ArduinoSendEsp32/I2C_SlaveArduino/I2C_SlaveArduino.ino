@@ -39,8 +39,8 @@ float voltage;
 float setpointTemperature = 30.0;
 float temperatureLagOffset = 1.0;
 
-float setpointRPM = 2400;
-float setpointPH = 7.0;
+float setpointRPM = 1000;
+float setpointPH = 6.6;
 
 
 void setTemp(float value) {
