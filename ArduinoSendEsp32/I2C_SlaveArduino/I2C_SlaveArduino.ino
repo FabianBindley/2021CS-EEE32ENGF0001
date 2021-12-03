@@ -4,26 +4,29 @@
 // I2C slave Arduino
 #define SLAVE_ADDR 9
 #define DELAY_TIME 100
+#define PRECISION 4
 
 // Define sensors
 #define TEMP 1
 #define MOTOR 2
 #define PH 3
 
+#define SERIAL_DEBUG_BAUD 115200
+
 int sensorNo = 0;
 
 
-float getTemp();
-float getRPM();
-float getPH();
+double getTemp();
+double getRPM();
+double getPH();
 
 void setTemp();
 void setRPM();
 void setPH();
 
 
-float readSensor() {
-  float result = 0.0;
+double readSensor() {
+  double result = 0.0;
   switch (sensorNo) {
     case TEMP:
       result = getTemp();
@@ -67,7 +70,7 @@ void setup() {
   // Function to run when data received from master
   Wire.onReceive(receiveEvent);
   
-  Serial.begin(9600);
+  Serial.begin(SERIAL_DEBUG_BAUD);
   Serial.println("I2C Slave Arduino");
 }
 
@@ -78,16 +81,18 @@ void loop() {
 void requestEvent() {
   Serial.println("Request event");
 
-  float result = readSensor();
-  String result_str = String(result, 3); // Convert float to string with 3 DP precision
+  double result = readSensor();
+
+  char result_str[10];
+  dtostrf(result, 4, 4, result_str);  //4 is mininum width, 4 is precision; float value is copied onto buff
 
   Wire.write(result_str); 
 }
 
-void receiveEvent() {
+void receiveEvent(int num_bytes) {
   Serial.println("Receive event");
 
-  char received_string[10];
+  char received_string[num_bytes];
   int counter = 0;
   char *token;
   float fvalue;
@@ -102,7 +107,7 @@ void receiveEvent() {
   // 2nd token is sensor number in int
   token = strtok(NULL, " ");
   if (token != NULL) {
-    int sensorNo = (token-'0') - 1;
+    int sensorNo = atoi(token);
   }
   
   // 3rd token is value in float
