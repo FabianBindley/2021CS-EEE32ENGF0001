@@ -118,12 +118,13 @@ RPC_Response processSetValue (const RPC_Data &data) {
   Serial.println("Recieved the set value method");
   bool led_state = data;
   Serial.println(led_state);
-  if (led_state == false) {
+
+  if (led_state == false)
     digitalWrite(LED_PIN, LOW);
-  }
-  if (led_state == true) {
+
+  if (led_state == true) 
     digitalWrite(LED_PIN, HIGH);
-  }
+
   return RPC_Response(NULL, led_state);
 }
 
@@ -136,15 +137,14 @@ RPC_Callback callbacks[callbacks_size] = {
 
 // Compares the input instruction and returns a corresponding int
 int encode_instr(char *arg) {
-  if (strcasecmp(arg, "READ") == 0) {
+  if (strcasecmp(arg, "READ") == 0)
     return 0;
-  } else if (strcmp(arg, "SET") == 0) {
+  else if (strcmp(arg, "SET") == 0)
     return 1;
-  } else if (strcmp(arg, "STOP") == 0) {
+  else if (strcmp(arg, "STOP") == 0)
     return 2;
-  } else {
+  else
     return -1;
-  }
 }
 
 
@@ -183,9 +183,9 @@ void loop() {
   delay(1000);
 
   // Thingsboard connection
-  if (WiFi.status() != WL_CONNECTED) {
+  if (WiFi.status() != WL_CONNECTED)
     reconnect();
-  }
+
   if (!tb.connected()) {
     subscribed = false;
     Serial.print("Connecting to: ");

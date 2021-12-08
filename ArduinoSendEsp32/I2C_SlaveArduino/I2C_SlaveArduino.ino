@@ -14,28 +14,51 @@
 #define SERIAL_DEBUG_BAUD 115200
 
 
+// Global variables
+int sensorNo = 0;
+
+int vInput = 0;
+float voltage;
+
+
 // Define constants
+const float voltageInput = 5;
+
+
+// Temperature
 const float A = 0.0012323996168659172;
 const float B = 0.00022347497515516762;
 const float C = 8.354794023823214e-08;
 const float kelvinOffset = 273.15;
-const float voltageInput = 5;
 const int range = 1024;
 const int resistorValue = 10000;
 
-// Define variables
-int sensorNo = 0;
-
-int vInput = 0;
 int heaterOutputPin = 3;
 int thermistorInputPin = A0;
 int heaterLEDpin = 4;
+int heaterOutputPower;
 
 float kelvinTemp;
 float celciusTemp;
 float thermistorResistance;
-float voltage;
+float tempDifference;
 
+
+// Motor
+int targetspeed = 600;
+float v;
+int squareWavePin = 2;
+int motorpin = 6;
+int motorspeed = 40;  // note buzzing (this keeps changing?)
+unsigned long lastTime;
+unsigned long myTime;
+int counter = 0;
+float frequency;  //back to int?
+int rpm;
+int oscillated = 0;
+
+
+// Setpoints
 float setpointTemperature = 30.0;
 float setpointRPM = 1000;
 float setpointPH = 6.6;
@@ -50,7 +73,6 @@ void setTemp(float value) {
 
 float getTemp() {
   vInput = analogRead(thermistorInputPin);
-  // delay(100); what's this for
   voltage = vInput / (range / voltageInput);
 
   Serial.print("Voltage: ");
@@ -93,15 +115,29 @@ float getPH() {
 void tempControl() {
   celciusTemp = getTemp();
 
+  heaterOutputPower = 0;
+  tempDifference = setpointTemperature - celciusTemp;
+
   Serial.print("Celcius Temp: ");
   Serial.println(celciusTemp);
   
   //If the temperature is less than the required temp, turn on the heating circuit
   if (celciusTemp < setpointTemperature) {
-    //Turn on the heater at half strength using 50% PWM
-    analogWrite(heaterOutputPin, 127); 
+    // Power between 0 -> 255. Power should not exceed 204 due to heater design limitations.
+    // Semi bang bang solution. Not purely proportional, allows for different temp outputs.
+
+    if (tempDifference > 2)
+      heaterOutputPower = 170;
+    else if (tempDifference < 2 && tempDifference > 0.5)
+      heaterOutputPower = 130;
+    else
+      heaterOutputPower = 90;
+    
+    Serial.print("Heater On with power: ");
+    Serial.println(heaterOutputPower);
+ 
+    analogWrite(heaterOutputPin,heaterOutputPower); 
     digitalWrite(heaterLEDpin, HIGH);
-    Serial.println("Heater On");
   } else {
     //Turn off the heater
     Serial.println("Heater off");
