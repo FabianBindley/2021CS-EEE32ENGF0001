@@ -59,7 +59,7 @@ int oscillated = 0;
 
 
 // Setpoints
-float setpointTemperature = 30.0;
+float setpointTemperature = 37.0;
 float setpointRPM = 1000;
 float setpointPH = 6.6;
 
@@ -73,7 +73,7 @@ void setTemp(float value) {
 
 float getTemp() {
   vInput = analogRead(thermistorInputPin);
-  voltage = vInput / (range / voltageInput);
+  voltage = 5 - (vInput / (range / voltageInput));
 
   Serial.print("Voltage: ");
   Serial.println(voltage);
