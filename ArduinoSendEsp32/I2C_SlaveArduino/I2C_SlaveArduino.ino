@@ -1,4 +1,5 @@
 #include <Wire.h>
+#include "QuickMedianLib.h"
 
 
 // I2C slave Arduino
@@ -47,15 +48,15 @@ float tempDifference;
 // Motor
 int targetspeed = 600;
 float v;
+float frequency;
 int squareWavePin = 2;
 int motorpin = 6;
 int motorspeed = 40;  // note buzzing (this keeps changing?)
 unsigned long lastTime;
 unsigned long myTime;
-int counter = 0;
-float frequency;  //back to int?
-int rpm;
-int oscillated = 0;
+volatile int counter = 0;
+volatile int loopCount = 0;
+volatile int oscillated = 0;
 
 
 // Setpoints
@@ -71,12 +72,12 @@ void setTemp(float value) {
 }
 
 
-float getTemp() {
+float getInstantTemp() {
   vInput = analogRead(thermistorInputPin);
   voltage = 5 - (vInput / (range / voltageInput));
 
-  Serial.print("Voltage: ");
-  Serial.println(voltage);
+//  Serial.print("Voltage: ");
+//  Serial.println(voltage);
   
   //We have voltage now we need resistance
   thermistorResistance = voltage * resistorValue / (voltageInput - voltage);
@@ -88,6 +89,21 @@ float getTemp() {
 }
 
 
+float getTemp() {
+  float temps[5];
+  float totalTemp = 0;
+  float currentTemp;
+  for (int i = 0; i < 5; i++) {
+    currentTemp = getInstantTemp();
+    temps[i] = currentTemp;
+    totalTemp += currentTemp;
+  }
+  float med = QuickMedian<float>::GetMedian(temps, 5);
+  float mean = totalTemp / 5;
+  return med;
+}
+
+
 void setRPM(float value) {
   setpointRPM = value;
   Serial.print("Set RPM to: ");
@@ -95,8 +111,36 @@ void setRPM(float value) {
 }
 
 
+void getFrequency() {
+  if (digitalRead(squareWavePin) == HIGH and oscillated == 0) {      
+   counter++;
+   oscillated = 1;
+//    Serial.println("HIGH");
+  }
+  if (digitalRead(squareWavePin) == LOW and oscillated == 1) {
+    oscillated = 0;
+//     Serial.println("LOW");
+  }
+  if (loopCount >= 10) {
+    Serial.print("Counter: ");
+    Serial.println(counter);
+    frequency = counter / 2; //floor() check /10 or /2
+    counter = 0;
+    loopCount = 0;
+    Serial.print("Frequency in function: ");
+    Serial.println(frequency);
+  }
+}
+
+
 float getRPM() {
-  return 0.0;
+  // frequency = 100.5;
+  getFrequency();
+  Serial.println("Freq ="+String(frequency));
+
+  float rpm = frequency * 30;
+ 
+  return rpm;
 }
 
 
@@ -144,6 +188,26 @@ void tempControl() {
     digitalWrite(heaterLEDpin, LOW);
     digitalWrite(heaterOutputPin, LOW);
   }
+}
+
+
+void motorControl() {
+  Serial.println("-----------------------------");
+
+  float rpm = getRPM();
+  Serial.println(String(rpm)+" rpm");
+
+  if (rpm < (setpointRPM - 20) && motorspeed < 250) {
+    motorspeed++;
+  }
+  if (rpm > (setpointRPM + 20)) {
+    motorspeed--;
+  }
+  
+  analogWrite(motorpin, motorspeed);
+  Serial.println(String(motorspeed)+" motor speed");
+
+  Serial.println("************");
 }
 
 
@@ -195,6 +259,13 @@ void loop() {
 
   // Handle control of sensors
   tempControl();
+  Serial.print("Setpoint Temp: ");
+  Serial.println(setpointTemperature);
+  
+  motorControl();
+  loopCount++;
+  Serial.print("Loop Count: ");
+  Serial.println(loopCount);
 }
 
 void requestEvent() {
@@ -207,6 +278,7 @@ void requestEvent() {
 
   Wire.write(result_str); 
 }
+
 
 void receiveEvent(int num_bytes) {
   Serial.println("Receive event");
