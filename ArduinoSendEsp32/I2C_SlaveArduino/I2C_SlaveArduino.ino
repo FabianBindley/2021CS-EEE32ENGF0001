@@ -52,8 +52,8 @@ float frequency;
 int squareWavePin = 2;
 int motorpin = 6;
 int motorspeed = 40;  // note buzzing (this keeps changing?)
-unsigned long lastTime;
-unsigned long myTime;
+unsigned long long time1;
+unsigned long long time2;
 volatile int counter = 0;
 volatile int loopCount = 0;
 volatile int oscillated = 0;
@@ -135,7 +135,7 @@ void getFrequency() {
 
 float getRPM() {
   // frequency = 100.5;
-  getFrequency();
+  // getFrequency();
   Serial.println("Freq ="+String(frequency));
 
   float rpm = frequency * 30;
@@ -255,12 +255,32 @@ void setup() {
 }
 
 void loop() {
-  delay(DELAY_TIME);
-
+  // delay(DELAY_TIME);
   // Handle control of sensors
   tempControl();
   Serial.print("Setpoint Temp: ");
   Serial.println(setpointTemperature);
+
+  time1 = micros();
+  while (micros() - time1 < 1000000) {
+    if (digitalRead(squareWavePin) == HIGH and oscillated == 0) {      
+   counter++;
+   oscillated = 1;
+//    Serial.println("HIGH");
+  }
+  if (digitalRead(squareWavePin) == LOW and oscillated == 1) {
+    oscillated = 0;
+//     Serial.println("LOW");
+  }
+  }
+
+  Serial.print("Counter: ");
+  Serial.println(counter);
+  frequency = counter / 2; //floor() check /10 or /2
+  counter = 0;
+  loopCount = 0;
+  Serial.print("Frequency in function: ");
+  Serial.println(frequency);
   
   motorControl();
   loopCount++;

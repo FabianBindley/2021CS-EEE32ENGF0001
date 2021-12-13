@@ -173,7 +173,7 @@ float read_arduino() {
 void setup() {
   Wire.begin(I2C_SDA, I2C_SCL);
   Serial.begin(SERIAL_DEBUG_BAUD); // opens Serial port and set baud rate
-  InitWiFi();
+  // InitWiFi();
   pinMode(LED_PIN, OUTPUT);
 }
 
@@ -183,48 +183,48 @@ void loop() {
   delay(1000);
 
   // Thingsboard connection
-  if (WiFi.status() != WL_CONNECTED)
-    reconnect();
-
-  if (!tb.connected()) {
-    subscribed = false;
-    Serial.print("Connecting to: ");
-    Serial.print(THINGSBOARD_SERVER);
-    Serial.print(" with token");
-    Serial.println(TOKEN);
-    if (!tb.connect(THINGSBOARD_SERVER, TOKEN)) {
-      Serial.println("Failed to connect, retrying....");
-      return;
-    }
-  }   
-  
-  if (!subscribed) {
-    Serial.println("Subscribing for RPC...");
-    if (!tb.RPC_Subscribe(callbacks, callbacks_size)) {
-      Serial.println("Failed to subscribe for RPC");
-      return;
-    }
-
-    Serial.println("Subscribe done");
-    subscribed = true;
-  }
+//  if (WiFi.status() != WL_CONNECTED)
+//    reconnect();
+//
+//  if (!tb.connected()) {
+//    subscribed = false;
+//    Serial.print("Connecting to: ");
+//    Serial.print(THINGSBOARD_SERVER);
+//    Serial.print(" with token");
+//    Serial.println(TOKEN);
+//    if (!tb.connect(THINGSBOARD_SERVER, TOKEN)) {
+//      Serial.println("Failed to connect, retrying....");
+//      return;
+//    }
+//  }   
+//  
+//  if (!subscribed) {
+//    Serial.println("Subscribing for RPC...");
+//    if (!tb.RPC_Subscribe(callbacks, callbacks_size)) {
+//      Serial.println("Failed to subscribe for RPC");
+//      return;
+//    }
+//
+//    Serial.println("Subscribe done");
+//    subscribed = true;
+//  }
 
   Serial.println("Sending data....");
 
   write_arduino(read_temp);
   float temp = read_arduino();
   // float temp = 1.23;
-  tb.sendTelemetryFloat("temperature", temp);
+//  tb.sendTelemetryFloat("temperature", temp);
 
   write_arduino(read_ph);
   float ph = read_arduino();
   // float ph = 2.34;
-  tb.sendTelemetryFloat("pH", ph);
+//  tb.sendTelemetryFloat("pH", ph);
 
   write_arduino(read_motor);
   float motor = read_arduino();
   // float motor = 3.45;
-  tb.sendTelemetryFloat("Motor stirring rate", motor);
+//  tb.sendTelemetryFloat("Motor stirring rate", motor);
 
-  tb.loop();
+//  tb.loop();
 }
