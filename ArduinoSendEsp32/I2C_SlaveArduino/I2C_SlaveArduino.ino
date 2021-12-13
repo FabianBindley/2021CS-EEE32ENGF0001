@@ -51,17 +51,35 @@ float v;
 float frequency;
 int squareWavePin = 2;
 int motorpin = 6;
-int motorspeed = 40;  // note buzzing (this keeps changing?)
+int motorspeed = 60;  // note buzzing (this keeps changing?)
 unsigned long long time1;
 unsigned long long time2;
 volatile int counter = 0;
 volatile int loopCount = 0;
 volatile int oscillated = 0;
+float rpms[5];
+
+
+// pH
+bool acid;
+bool alkaline;
+
+int phvalue;
+int pump1=11; //acid pump
+int pump2=10; //alki pump
+
+int x=0;
+int y=0;
+float Z = -16.65;
+float Y = 48.402;
+float voltage2;
+float pH;
+float probeRead;
 
 
 // Setpoints
 float setpointTemperature = 37.0;
-float setpointRPM = 1000;
+float setpointRPM = 600;
 float setpointPH = 6.6;
 
 
@@ -137,8 +155,14 @@ float getRPM() {
   // frequency = 100.5;
   // getFrequency();
   Serial.println("Freq ="+String(frequency));
-
   float rpm = frequency * 30;
+//
+//  rpms[loopCount] = rpm;
+//
+//  if (loopCount == 4) {
+//    float rpm = QuickMedian<float>::GetMedian(rpms, 5);
+//    loopCount = 0;
+//  }
  
   return rpm;
 }
@@ -153,6 +177,70 @@ void setPH(float value) {
 
 float getPH() {
   return 0.0;
+  probeRead=analogRead(A1);
+  voltage2=probeRead/1023.0*5.0;
+  Serial.print("Voltage:");
+  Serial.println(voltage2);
+  //Convert voltage to pH
+  pH = Z * voltage2 + Y;
+  Serial.println(pH);
+
+  return pH;
+
+  
+  float sensorValue = analogRead(A1);
+  float phvalue=map(sensorValue,484,545,4,10);
+
+
+   //calibrating when ph=7
+   if (sensorValue>502 and sensorValue<515)
+   {
+   phvalue = 7.0;
+   acid = false;
+   alkaline= false;
+   }
+   //calibrating when ph=10 
+   if (sensorValue>(540) and sensorValue<(545)){
+   phvalue = 10.0;
+   acid = true;
+   alkaline = false;
+   }
+   //calibration of ph=4
+   if (sensorValue>479 and sensorValue<484)
+   {
+   phvalue = 4.0;
+   acid = false;
+   alkaline = true;
+   }
+   //calibration of ph=5
+
+   if (sensorValue>487 and sensorValue<494)
+   {
+   phvalue = 5.0;
+   acid = false;
+   alkaline = false;
+   }
+   
+  Serial.print("PH probe value = ");
+  Serial.println(sensorValue);
+  Serial.print("PH reading = ");
+  Serial.println(phvalue);
+
+  return phvalue;
+}
+
+
+void phControl() {
+  float ph = getPH();
+  if (ph>(7.00)){
+    digitalWrite(pump1,HIGH);
+    digitalWrite(pump2,LOW);
+  }
+
+  if (ph<(5.00)){
+    digitalWrite(pump2,HIGH);
+    digitalWrite(pump1,LOW);
+  }
 }
 
 
@@ -205,7 +293,8 @@ void motorControl() {
   }
   
   analogWrite(motorpin, motorspeed);
-  Serial.println(String(motorspeed)+" motor speed");
+  Serial.print(motorspeed);
+  Serial.println(" motor speed");
 
   Serial.println("************");
 }
@@ -236,6 +325,18 @@ void writeSensor(float value) {
 }
 
 
+void death() {
+  //Turn off the heater
+  digitalWrite(heaterLEDpin, LOW);
+  digitalWrite(heaterOutputPin, LOW);
+  Serial.println("Heater off");
+
+  // Turn off the motor
+  analogWrite(motorpin, 0);
+  Serial.println("Motor off");
+}
+
+
 void setup() {
   Wire.begin(SLAVE_ADDR); // Join i2c bus with slave address
  
@@ -248,6 +349,10 @@ void setup() {
   pinMode(heaterOutputPin,OUTPUT);
   pinMode(heaterLEDpin,OUTPUT);
   pinMode(thermistorInputPin,INPUT);
+
+  // Motor
+  pinMode(pump1, OUTPUT);
+  pinMode(pump2, OUTPUT);
   
   // Begin debug Serial Monitor
   Serial.begin(SERIAL_DEBUG_BAUD);
@@ -261,8 +366,10 @@ void loop() {
   Serial.print("Setpoint Temp: ");
   Serial.println(setpointTemperature);
 
-  time1 = micros();
-  while (micros() - time1 < 1000000) {
+  int new_counter = 0;
+  time1 = millis();
+  while (millis() - time1 < 1000) {
+    new_counter++;
     if (digitalRead(squareWavePin) == HIGH and oscillated == 0) {      
    counter++;
    oscillated = 1;
@@ -274,11 +381,13 @@ void loop() {
   }
   }
 
+  Serial.print("New Counter: ");
+  Serial.println(new_counter);
+
   Serial.print("Counter: ");
   Serial.println(counter);
   frequency = counter / 2; //floor() check /10 or /2
   counter = 0;
-  loopCount = 0;
   Serial.print("Frequency in function: ");
   Serial.println(frequency);
   
@@ -286,6 +395,8 @@ void loop() {
   loopCount++;
   Serial.print("Loop Count: ");
   Serial.println(loopCount);
+
+  // phControl();
 }
 
 void requestEvent() {
@@ -334,6 +445,7 @@ void receiveEvent(int num_bytes) {
   
   else if (strcmp(operation, "STOP") == 0){
     // Raise infinite loop to stop running of code
+    death();
     while (1);
   }
 }

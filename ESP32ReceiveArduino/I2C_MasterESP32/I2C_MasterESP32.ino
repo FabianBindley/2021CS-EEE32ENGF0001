@@ -18,7 +18,7 @@
 #define SLAVE_ADDR 9  // Define Slave I2C Address
 
 #define WIFI_AP "Me"
-#define WIFI_PASSWORD "MeMyself"
+#define WIFI_PASSWORD "12345678"
 
 #define TOKEN "n8cBswJGipnRCD0AJVte"
 #define THINGSBOARD_SERVER "demo.thingsboard.io"
@@ -34,6 +34,7 @@ float motor_value;
 char read_temp[] = "READ 1";
 char read_motor[] = "READ 2";
 char read_ph[] = "READ 3";
+char emergency_stop[] = "STOP";
 
 
 WiFiClient espClient;
@@ -119,11 +120,14 @@ RPC_Response processSetValue (const RPC_Data &data) {
   bool led_state = data;
   Serial.println(led_state);
 
-  if (led_state == false)
-    digitalWrite(LED_PIN, LOW);
+  Serial.println(emergency_stop);
+  write_arduino(emergency_stop);
 
-  if (led_state == true) 
-    digitalWrite(LED_PIN, HIGH);
+//  if (led_state == false)
+//    digitalWrite(LED_PIN, LOW);
+//
+//  if (led_state == true) 
+//    digitalWrite(LED_PIN, HIGH);
 
   return RPC_Response(NULL, led_state);
 }
@@ -183,48 +187,48 @@ void loop() {
   delay(1000);
 
   // Thingsboard connection
-//  if (WiFi.status() != WL_CONNECTED)
-//    reconnect();
-//
-//  if (!tb.connected()) {
-//    subscribed = false;
-//    Serial.print("Connecting to: ");
-//    Serial.print(THINGSBOARD_SERVER);
-//    Serial.print(" with token");
-//    Serial.println(TOKEN);
-//    if (!tb.connect(THINGSBOARD_SERVER, TOKEN)) {
-//      Serial.println("Failed to connect, retrying....");
-//      return;
-//    }
-//  }   
-//  
-//  if (!subscribed) {
-//    Serial.println("Subscribing for RPC...");
-//    if (!tb.RPC_Subscribe(callbacks, callbacks_size)) {
-//      Serial.println("Failed to subscribe for RPC");
-//      return;
-//    }
-//
-//    Serial.println("Subscribe done");
-//    subscribed = true;
-//  }
+  if (WiFi.status() != WL_CONNECTED)
+    reconnect();
+
+  if (!tb.connected()) {
+    subscribed = false;
+    Serial.print("Connecting to: ");
+    Serial.print(THINGSBOARD_SERVER);
+    Serial.print(" with token");
+    Serial.println(TOKEN);
+    if (!tb.connect(THINGSBOARD_SERVER, TOKEN)) {
+      Serial.println("Failed to connect, retrying....");
+      return;
+    }
+  }   
+  
+  if (!subscribed) {
+    Serial.println("Subscribing for RPC...");
+    if (!tb.RPC_Subscribe(callbacks, callbacks_size)) {
+      Serial.println("Failed to subscribe for RPC");
+      return;
+    }
+
+    Serial.println("Subscribe done");
+    subscribed = true;
+  }
 
   Serial.println("Sending data....");
 
   write_arduino(read_temp);
   float temp = read_arduino();
   // float temp = 1.23;
-//  tb.sendTelemetryFloat("temperature", temp);
+  tb.sendTelemetryFloat("temperature", temp);
 
   write_arduino(read_ph);
   float ph = read_arduino();
   // float ph = 2.34;
-//  tb.sendTelemetryFloat("pH", ph);
+  tb.sendTelemetryFloat("pH", ph);
 
   write_arduino(read_motor);
   float motor = read_arduino();
   // float motor = 3.45;
-//  tb.sendTelemetryFloat("Motor stirring rate", motor);
+  tb.sendTelemetryFloat("Motor stirring rate", motor);
 
-//  tb.loop();
+  tb.loop();
 }
