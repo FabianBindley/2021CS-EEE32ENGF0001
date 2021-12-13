@@ -59,6 +59,16 @@ volatile int loopCount = 0;
 volatile int oscillated = 0;
 
 
+// pH
+bool acid;
+bool alkaline;
+
+int phvalue;
+int pump1=11; //acid pump
+int pump2=10; //alki pump
+int sensorValue = analogRead(A4);
+
+
 // Setpoints
 float setpointTemperature = 37.0;
 float setpointRPM = 1000;
@@ -152,7 +162,57 @@ void setPH(float value) {
 
 
 float getPH() {
-  return 0.0;
+  float sensorValue = analogRead(A4);
+  float phvalue=map(sensorValue,532,473,4,10);
+
+   //calibrating when ph=7
+   if (sensorValue>510 and sensorValue<525)
+   {
+   phvalue = 7.0;
+   acid = false;
+   alkaline= false;
+   }
+   //calibrating when ph=10 
+   if (sensorValue>(473) and sensorValue<(489)){
+   phvalue = 10.0;
+   acid = true;
+   alkaline = false;
+   }
+   //calibration of ph=4
+   if (sensorValue>480 and sensorValue<509)
+   {
+   phvalue = 4.0;
+   acid = false;
+   alkaline = true;
+   }
+   //calibration of ph=5
+  
+   if (sensorValue>500 and sensorValue<532)
+   {
+   phvalue = 5.0;
+   acid = false;
+   alkaline = false;
+   }
+  Serial.print("PH probe value = ");
+  Serial.println(sensorValue);
+  Serial.print("PH reading = ");
+  Serial.println(phvalue);
+
+  return phvalue;
+}
+
+
+void phControl() {
+  float ph = getPH();
+  if (ph>(7.00)){
+    digitalWrite(pump1,HIGH);
+    digitalWrite(pump2,LOW);
+  }
+
+  if (ph<(5.00)){
+    digitalWrite(pump2,HIGH);
+    digitalWrite(pump1,LOW);
+  }
 }
 
 
@@ -248,6 +308,10 @@ void setup() {
   pinMode(heaterOutputPin,OUTPUT);
   pinMode(heaterLEDpin,OUTPUT);
   pinMode(thermistorInputPin,INPUT);
+
+  // Motor
+  pinMode(pump1, OUTPUT);
+  pinMode(pump2, OUTPUT);
   
   // Begin debug Serial Monitor
   Serial.begin(SERIAL_DEBUG_BAUD);
@@ -286,6 +350,8 @@ void loop() {
   loopCount++;
   Serial.print("Loop Count: ");
   Serial.println(loopCount);
+
+  // phControl();
 }
 
 void requestEvent() {
